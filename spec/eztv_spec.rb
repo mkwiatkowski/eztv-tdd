@@ -12,4 +12,12 @@ describe Eztv do
       Eztv.last_week_results.should be_an(Array)
     end
   end
+
+  describe '.finish_process' do
+    context "true" do
+      it "should return true" do
+        Eztv.finish_process.should == true
+      end
+    end
+  end
 end
