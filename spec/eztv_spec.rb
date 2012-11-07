@@ -11,6 +11,11 @@ describe Eztv do
     it "should return an array" do
       Eztv.last_week_results.should be_an(Array)
     end
+
+    it "should return collection with three elements" do
+      Eztv.last_week_results.should have(3).items
+    end
+
   end
 
   describe '.finish_process' do
