@@ -9,3 +9,4 @@
 ## Additional material (in Polish)
 
 1. [Description of the task](http://www.youtube.com/watch?v=91fNqaCwRmo)
+2. [First code review](http://www.youtube.com/watch?v=sfOXy8_69b4)
