@@ -1,6 +1,10 @@
 module Eztv
   @parse_flag = 0
 
+  def self.set_title_from_args
+    (ARGV.length > 0) ? ARGV[0] : nil
+  end
+    
   def self.last_week_results
     [1, 2, 3]
   end
