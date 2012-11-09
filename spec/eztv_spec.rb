@@ -15,7 +15,6 @@ describe Eztv do
     it "should return collection with three elements" do
       Eztv.last_week_results.should have(3).items
     end
-
   end
 
   describe '.finish_process' do
@@ -26,3 +25,12 @@ describe Eztv do
     end
   end
 end
+
+  describe '.set_title_from_args' do
+    it "should return first argument provided by user or nothing" do
+    ARGV = %w{ "some_title", "something_else" }
+    expect = Eztv.set_title_from_args
+    expect.should eq(ARGV[0])
+  end
+end
+
