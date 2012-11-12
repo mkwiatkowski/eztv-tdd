@@ -1,5 +1,13 @@
+require 'open-uri'
+require 'nokogiri'
+
 module Eztv
+
   @parse_flag = 0
+
+  def self.get_page(number=0)
+    Nokogiri::HTML(open("http://eztv.it/page_#{number}"))
+  end
 
   def self.set_title_from_args
     (ARGV.length > 0) ? ARGV[0] : nil
