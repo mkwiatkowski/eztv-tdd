@@ -9,10 +9,15 @@ module Eztv
     Nokogiri::HTML(open("http://eztv.it/page_#{number}"))
   end
 
+  def self.parse_page(number)
+    doc = get_page(number)
+    doc.css("table.forum_header_border").last
+  end
+
   def self.set_title_from_args
     (ARGV.length > 0) ? ARGV[0] : nil
   end
-    
+
   def self.last_week_results
     [1, 2, 3]
   end
