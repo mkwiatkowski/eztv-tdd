@@ -18,10 +18,29 @@ describe Eztv do
       Eztv.get_page(6)
     end
 
-    it "should throw an error"do
+    it "should throw an error" do
       lambda { Eztv.get_page("strona") }.should raise_error
       lambda { Eztv.get_page(-12) }.should raise_error
     end
+  end
+
+  describe 'parse_page' do
+
+
+    it 'should call get_page method' do
+      doc_stub = stub(css: [])
+      Eztv.should_receive(:get_page).with(0).and_return(doc_stub)
+      Eztv.parse_page(0)
+    end
+
+    it 'should search for "table.forum_header_border" syntax' do
+      doc_stub = stub(last: [])
+      doc_mock = mock
+      doc_mock.should_receive(:css).with('table.forum_header_border').and_return(doc_stub)
+      Nokogiri.stub(:HTML => doc_mock)
+      Eztv.parse_page(0)
+    end
+
   end
 
   describe '.set_title_from_args' do
