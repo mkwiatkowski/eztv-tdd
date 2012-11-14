@@ -14,6 +14,10 @@ module Eztv
     doc.css("table.forum_header_border").last
   end
 
+  def self.list_the_elements_of_page(number)
+    parse_page(number).xpath("//td[@class='forum_thread_post']/a[@class='epinfo']/text()").to_a
+  end
+
   def self.set_title_from_args
     (ARGV.length > 0) ? ARGV[0] : nil
   end
