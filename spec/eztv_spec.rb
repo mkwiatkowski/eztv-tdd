@@ -40,6 +40,41 @@ describe Eztv do
     end
   end
 
+  describe '.parse_next_page?' do
+    before do
+      Eztv.stub(open: File.read('spec/fixtures/index.html'))
+      Eztv.parse_page(0)
+    end
+
+    it 'should be called without arguments' do
+      expect { Eztv.parse_next_page?('x') }.to raise_error
+    end
+
+    it 'should return true when parsed not-last page' do
+      Eztv.parse_next_page?.should be_true
+    end
+
+    it 'should return false when parsed last page' do
+      Eztv.stub(open: File.read('spec/fixtures/index_last.html'))
+      Eztv.parse_page(0)
+      Eztv.parse_next_page?.should be_false
+    end
+
+    it 'should call content method' do
+      page = Eztv.instance_variable_get(:@page)
+      doc_mock = mock
+      doc_mock.should_receive(:content).and_return("")
+      page.stub( :at => doc_mock )
+      Eztv.parse_next_page?
+    end
+
+    it 'should look at "tr.forum_header_border:last-child td:nth-child(4)"' do
+      page = Eztv.instance_variable_get(:@page)
+      page.should_receive(:at).with('tr.forum_header_border:last-child td:nth-child(4)').and_return(stub(content: ''))
+      Eztv.parse_next_page?
+    end
+  end
+
   describe '.list_the_elements_of_page' do
     it 'should return array' do
       Eztv.list_the_elements_of_page(0).should be_an(Array)
