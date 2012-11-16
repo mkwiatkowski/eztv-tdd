@@ -13,7 +13,7 @@ describe Eztv do
       Eztv.get_page
     end
 
-    it "should connect with eztv and get the sixth page" do
+    it "should connect with eztv and get the seventh page" do
       Eztv.should_receive(:open).with("http://eztv.it/page_6")
       Eztv.get_page(6)
     end
