@@ -9,17 +9,12 @@ module Eztv
     Nokogiri::HTML(open("http://eztv.it/page_#{number}"))
   end
 
-  def self.parse_page(number)
-    doc = get_page(number)
-    @page = doc.css("table.forum_header_border").last
+  def self.list_the_elements_of_page(page)
+    page.css("table.forum_header_border").last.xpath("//td[@class='forum_thread_post']/a[@class='epinfo']/text()").to_a.map(&:text)
   end
 
-  def self.list_the_elements_of_page(number)
-    parse_page(number).xpath("//td[@class='forum_thread_post']/a[@class='epinfo']/text()").to_a
-  end
-
-  def self.parse_next_page?
-     @page.at('tr.forum_header_border:last-child td:nth-child(4)').content.match(/>1 week/).nil?
+  def self.is_last_page?(page)
+    !page.at('tr.forum_header_border:last-child td:nth-child(4)').content.match(/>1 week/).nil?
   end
 
   def self.set_title_from_args
