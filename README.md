@@ -16,3 +16,4 @@
 6. [Fifth code review](http://www.youtube.com/watch?v=7xy78b-IfTI)
 7. [Sixth code review](http://www.youtube.com/watch?v=sAXKeWHTA3U)
 8. [Seventh code review](http://www.youtube.com/watch?v=wEYjvHnZZXU)
+9. [Eighth code review](http://www.youtube.com/watch?v=VMh-z6vPQmM)
