@@ -13,7 +13,7 @@ describe Eztv do
       Eztv.get_page
     end
 
-    it "should connect with eztv and get the sixth page" do
+    it "should connect with eztv and get the seventh page" do
       Eztv.should_receive(:open).with("http://eztv.it/page_6")
       Eztv.get_page(6)
     end
@@ -24,81 +24,63 @@ describe Eztv do
     end
   end
 
-  describe '.parse_page' do
-    it 'should call get_page method' do
-      doc_stub = stub(css: [])
-      Eztv.should_receive(:get_page).with(0).and_return(doc_stub)
-      Eztv.parse_page(0)
+  describe '.is_last_page?' do
+    context 'when page is last' do
+      before do
+        @last_page = Nokogiri::HTML("<table><tr class='forum_header_border'><td></td><td></td><td></td><td>&gt;1 week</td></tr></table>");
+      end
+
+      it 'should return true when the page contains entry with age > 1' do
+        Eztv.is_last_page?(@last_page).should be_true
+      end
+
+      it 'should look at "tr.forum_header_border:last-child td:nth-child(4) on last page"' do
+        @last_page.should_receive(:at).with('tr.forum_header_border:last-child td:nth-child(4)').and_return(stub(content: ''))
+        Eztv.is_last_page?(@last_page)
+      end
     end
 
-    it 'should search for "table.forum_header_border" element on page' do
-      doc_stub = stub(last: [])
-      doc_mock = mock
-      doc_mock.should_receive(:css).with('table.forum_header_border').and_return(doc_stub)
-      Nokogiri.stub(:HTML => doc_mock)
-      Eztv.parse_page(0)
-    end
-  end
+    context 'when page is not last' do
+      before do
+        @page = Nokogiri::HTML("<table><tr class='forum_header_border'><td></td><td></td><td></td><td>&gt;6 hours</td></tr></table>");
+      end
+      it 'should return false when parsed not-last page' do
+        Eztv.is_last_page?(@page).should be_false
+      end
 
-  describe '.parse_next_page?' do
-    before do
-      Eztv.stub(open: File.read('spec/fixtures/index.html'))
-      Eztv.parse_page(0)
-    end
-
-    it 'should be called without arguments' do
-      expect { Eztv.parse_next_page?('x') }.to raise_error
-    end
-
-    it 'should return true when parsed not-last page' do
-      Eztv.parse_next_page?.should be_true
-    end
-
-    it 'should return false when parsed last page' do
-      Eztv.stub(open: File.read('spec/fixtures/index_last.html'))
-      Eztv.parse_page(0)
-      Eztv.parse_next_page?.should be_false
+      it 'should look at "tr.forum_header_border:last-child td:nth-child(4) on not last page"' do
+        @last_page.should_receive(:at).with('tr.forum_header_border:last-child td:nth-child(4)').and_return(stub(content: ''))
+        Eztv.is_last_page?(@last_page)
+      end
     end
 
     it 'should call content method' do
-      page = Eztv.instance_variable_get(:@page)
       doc_mock = mock
       doc_mock.should_receive(:content).and_return("")
-      page.stub( :at => doc_mock )
-      Eztv.parse_next_page?
-    end
-
-    it 'should look at "tr.forum_header_border:last-child td:nth-child(4)"' do
-      page = Eztv.instance_variable_get(:@page)
-      page.should_receive(:at).with('tr.forum_header_border:last-child td:nth-child(4)').and_return(stub(content: ''))
-      Eztv.parse_next_page?
+      Eztv.is_last_page?(stub(at: doc_mock))
     end
   end
 
   describe '.list_the_elements_of_page' do
+    let(:page) {Nokogiri::HTML(File.read('spec/fixtures/index.html'))}
+    let(:part_of_page) {part_of_page = Nokogiri::HTML(File.read('spec/fixtures/index_part.html'))}
+
     it 'should return array' do
-      Eztv.list_the_elements_of_page(0).should be_an(Array)
+      Eztv.list_the_elements_of_page(page).should be_an(Array)
     end
 
     it 'should return not empty array' do
-      Eztv.list_the_elements_of_page(0).should_not be_empty
+      Eztv.list_the_elements_of_page(page).should_not be_empty
     end
 
-    it 'should throw an error' do
-      lambda { Eztv.list_the_elements_of_page("a") }.should raise_error
+    it "should return ['History Ch Crimes That Shook Britain', 'Key and Peele', 'The Colbert Report']" do
+      Eztv.list_the_elements_of_page(part_of_page).should == ['History Ch Crimes That Shook Britain', 'Key and Peele', 'The Colbert Report']
     end
 
-    it 'should contain titles' do
-      doc_mock = mock
-      doc_mock.should_receive(:xpath).with("//td[@class='forum_thread_post']/a[@class='epinfo']/text()").and_return([])
-      Eztv.stub(:parse_page => doc_mock)
-      Eztv.list_the_elements_of_page(0)
-    end
-
-    it 'should call parse_page method' do
-      doc_stub = stub(xpath: [])
-      Eztv.should_receive(:parse_page).with(0).and_return(doc_stub)
-      Eztv.list_the_elements_of_page(0)
+    it 'should raise NoMethodError' do
+      expect {
+        Eztv.list_the_elements_of_page("a")
+      }.to raise_error(NoMethodError)
     end
   end
 
