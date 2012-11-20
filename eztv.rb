@@ -18,7 +18,7 @@ module Eztv
   end
 
   def self.set_title_from_args
-    (ARGV.length > 0) ? ARGV[0] : nil
+    (ARGV.length > 0) ? ARGV[0] : ""
   end
 
   def self.last_week_results
@@ -27,5 +27,9 @@ module Eztv
 
   def self.finish_process
     @parse_flag < 1
+  end
+
+  def self.matching_titles(page)
+    list_the_elements_of_page(page).delete_if {|title| !title.downcase.include? set_title_from_args.downcase}
   end
 end

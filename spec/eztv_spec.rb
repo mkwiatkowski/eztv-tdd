@@ -92,9 +92,9 @@ describe Eztv do
       expect.should eq(ARGV.first)
     end
 
-    it "should return nil if user provided no arguments" do
+    it "should return empty string if user provided no arguments" do
       stub_const("ARGV", [])
-      Eztv.set_title_from_args.should be_nil
+      Eztv.set_title_from_args.should eq("")
     end
   end
 
@@ -119,6 +119,24 @@ describe Eztv do
       it "should return true" do
         Eztv.finish_process.should == true
       end
+    end
+  end
+
+  describe ".matching_titles" do
+    let(:page) {Nokogiri::HTML(File.read('spec/fixtures/index_part.html'))}
+
+    it "should return array" do
+      Eztv.matching_titles(page).should be_an(Array)
+    end
+
+    it "should return all titles when no user arguments are passed" do
+      stub_const("ARGV", [])
+      Eztv.matching_titles(page).should eq(["History Ch Crimes That Shook Britain", "Key and Peele", "The Colbert Report"])
+    end
+
+    it "should return only matching titles" do
+      stub_const("ARGV", ["crimes"])
+      Eztv.matching_titles(page).should eq(["History Ch Crimes That Shook Britain"])
     end
   end
 
