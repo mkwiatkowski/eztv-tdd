@@ -27,7 +27,7 @@ describe Eztv do
   describe '.is_last_page?' do
     context 'when page is last' do
       before do
-        @last_page = Nokogiri::HTML("<table><tr class='forum_header_border'><td></td><td></td><td></td><td>&gt;1 week</td></tr></table>");
+        @last_page = Nokogiri::HTML("<table><tr class='forum_header_border'><td></td><td></td><td></td><td>&gt;1 week</td></tr></table>")
       end
 
       it 'should return true when the page contains entry with age > 1' do
@@ -49,8 +49,8 @@ describe Eztv do
       end
 
       it 'should look at "tr.forum_header_border:last-child td:nth-child(4) on not last page"' do
-        @last_page.should_receive(:at).with('tr.forum_header_border:last-child td:nth-child(4)').and_return(stub(content: ''))
-        Eztv.is_last_page?(@last_page)
+        @page.should_receive(:at).with('tr.forum_header_border:last-child td:nth-child(4)').and_return(stub(content: ''))
+        Eztv.is_last_page?(@page)
       end
     end
 
@@ -84,21 +84,26 @@ describe Eztv do
     end
   end
 
-  describe '.set_title_from_args' do
+  describe '.search_title' do
     it "should return first argument provided by user" do
       stub_const("ARGV", ["some_title", "something_else"])
-      Eztv.set_title_from_args.should eq("some_title")
-      expect = Eztv.set_title_from_args
+      Eztv.search_title.should eq("some_title")
+      expect = Eztv.search_title
       expect.should eq(ARGV.first)
     end
 
     it "should return empty string if user provided no arguments" do
       stub_const("ARGV", [])
-      Eztv.set_title_from_args.should eq("")
+      Eztv.search_title.should eq("")
     end
   end
 
   describe '.last_week_results' do
+    before do
+      Eztv.should_receive(:get_page).with(0).twice.and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
+      Eztv.should_receive(:get_page).with(1).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+    end
+
     it "should be called with no arguments" do
       expect {
         Eztv.last_week_results
@@ -109,8 +114,8 @@ describe Eztv do
       Eztv.last_week_results.should be_an(Array)
     end
 
-    it "should return collection with three elements" do
-      Eztv.last_week_results.should have(3).items
+    it "should return collection of titles from last week" do
+      Eztv.last_week_results.should eq(['History Ch Crimes That Shook Britain', 'Key and Peele', 'The Colbert Report'])
     end
   end
 
