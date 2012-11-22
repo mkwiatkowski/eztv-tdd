@@ -86,7 +86,7 @@ describe Eztv do
 
   describe '.search_title' do
     it "should return first argument provided by user" do
-      stub_const("ARGV", ["some_title", "something_else"])
+      stub_const("ARGV", ["some_title"])
       Eztv.search_title.should eq("some_title")
       expect = Eztv.search_title
       expect.should eq(ARGV.first)
@@ -95,6 +95,12 @@ describe Eztv do
     it "should return empty string if user provided no arguments" do
       stub_const("ARGV", [])
       Eztv.search_title.should eq("")
+    end
+
+    it "should return message when there is more than one argument" do
+      stub_const("ARGV", ["title", "extra_argument"])
+      $stdout.should_receive(:puts).with("Usage: eztv.rb [title]")
+      Eztv.search_title
     end
   end
 
@@ -115,7 +121,10 @@ describe Eztv do
     end
 
     it "should return collection of titles from last week" do
-      Eztv.last_week_results.should eq(['History Ch Crimes That Shook Britain', 'Key and Peele', 'The Colbert Report'])
+      Eztv.last_week_results.should eq(['History Ch Crimes That Shook Britain', 'Key and Peele'])
+    end
+    it "should not contain title older than one week" do
+      Eztv.last_week_results.should_not include('The Colbert Report')
     end
   end
 
