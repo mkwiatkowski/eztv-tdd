@@ -105,26 +105,35 @@ describe Eztv do
   end
 
   describe '.last_week_results' do
-    before do
-      Eztv.should_receive(:get_page).with(0).twice.and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
-      Eztv.should_receive(:get_page).with(1).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+    context "when two pages have elements younger than a week" do
+      before do
+        Eztv.should_receive(:get_page).with(0).twice.and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
+        Eztv.should_receive(:get_page).with(1).twice.and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+      end
+
+      it "should be called with no arguments" do
+        expect {
+          Eztv.last_week_results
+        }.to_not raise_error
+      end
+
+      it "should return an array" do
+        Eztv.last_week_results.should be_an(Array)
+      end
     end
 
-    it "should be called with no arguments" do
-      expect {
-        Eztv.last_week_results
-      }.to_not raise_error
-    end
+    context "when a page with a titles older than one week is returned" do
+      before do
+        Eztv.should_receive(:get_page).with(0).twice.and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+      end
 
-    it "should return an array" do
-      Eztv.last_week_results.should be_an(Array)
-    end
+      it "should return collection of titles from last week" do
+        Eztv.last_week_results.should eq(['History Ch Crimes That Shook Britain', 'Key and Peele'])
+      end
 
-    it "should return collection of titles from last week" do
-      Eztv.last_week_results.should eq(['History Ch Crimes That Shook Britain', 'Key and Peele'])
-    end
-    it "should not contain title older than one week" do
-      Eztv.last_week_results.should_not include('The Colbert Report')
+      it "should not contain title older than one week" do
+        Eztv.last_week_results.should_not include('The Colbert Report')
+      end
     end
   end
 
