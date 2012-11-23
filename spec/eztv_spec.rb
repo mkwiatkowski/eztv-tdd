@@ -97,34 +97,69 @@ describe Eztv do
       Eztv.search_title.should eq("")
     end
 
-    it "should return message when there is more than one argument" do
+    it "should return message and leave when there is more than one argument" do
       stub_const("ARGV", ["title", "extra_argument"])
       $stdout.should_receive(:puts).with("Usage: eztv.rb [title]")
+      Eztv.should_receive(:raise).with(SystemExit)
       Eztv.search_title
     end
   end
 
   describe '.last_week_results' do
+    context "when two pages have elements younger than a week" do
+      before do
+        Eztv.should_receive(:get_page).with(0).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
+        Eztv.should_receive(:get_page).with(1).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+      end
+
+      it "should be called with no arguments" do
+        expect {
+          Eztv.last_week_results
+        }.to_not raise_error
+      end
+
+      it "should return an array" do
+        Eztv.last_week_results.should be_an(Array)
+      end
+    end
+
+    context "when a page with a titles older than one week is returned" do
+      before do
+        Eztv.should_receive(:get_page).with(0).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+      end
+
+      it "should return collection of titles from last week" do
+        Eztv.last_week_results.should eq(['History Ch Crimes That Shook Britain', 'Key and Peele'])
+      end
+
+      it "should not contain title older than one week" do
+        Eztv.last_week_results.should_not include('The Colbert Report')
+      end
+    end
+  end
+
+  describe ".print_last_week_results" do
     before do
-      Eztv.should_receive(:get_page).with(0).twice.and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
-      Eztv.should_receive(:get_page).with(1).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+      Eztv.should_receive(:get_page).with(0).at_least(:once).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
+      Eztv.should_receive(:get_page).with(1).at_least(:once).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
     end
 
-    it "should be called with no arguments" do
-      expect {
-        Eztv.last_week_results
-      }.to_not raise_error
+    it "should receive up to one argument" do
+      expect { Eztv.print_last_week_results }.not_to raise_error
+      expect { Eztv.print_last_week_results('a') }.not_to raise_error
+      expect { Eztv.print_last_week_results('a', 'b') }.to raise_error
     end
 
-    it "should return an array" do
-      Eztv.last_week_results.should be_an(Array)
+    it "should print on screen titles separated by new line" do
+      $stdout.should_receive(:puts).with("History Ch Crimes That Shook Britain").twice
+      $stdout.should_receive(:puts).with("Key and Peele").twice
+      $stdout.should_receive(:puts).with("The Colbert Report")
+      Eztv.print_last_week_results
     end
 
-    it "should return collection of titles from last week" do
-      Eztv.last_week_results.should eq(['History Ch Crimes That Shook Britain', 'Key and Peele'])
-    end
-    it "should not contain title older than one week" do
-      Eztv.last_week_results.should_not include('The Colbert Report')
+    it "should print on screen only those titles which match to argument" do
+      $stdout.should_receive(:puts).with('The Colbert Report')
+      Eztv.print_last_week_results('Colbert')
     end
   end
 
