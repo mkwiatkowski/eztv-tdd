@@ -188,4 +188,19 @@ describe Eztv do
       Eztv.matching_titles(page).should eq(["History Ch Crimes That Shook Britain"])
     end
   end
+
+  describe '.list_the_elements_of_page' do
+    let(:page) {Nokogiri::HTML(File.read('spec/fixtures/index.html'))}
+
+    it 'should contain date url and title' do
+      episodes = Eztv.list_the_elements_of_page(page)
+      episodes[0][:date].should eql('15, November, 2012')
+      episodes[0][:title].should eql('History Ch Crimes That Shook Britain 4of6 Stephanie Slater XviD AC3-MVGroup')
+      episodes[0][:url].should eql('http://eztv.it/ep/39673/history-ch-crimes-that-shook-britain-4of6-stephanie-slater-xvid-ac3-mvgroup/')
+    end
+
+    it 'each element should be and instance of Hash' do
+      Eztv.list_the_elements_of_page(page)[0].should be_an(Hash)
+    end
+  end
 end
