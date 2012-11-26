@@ -188,5 +188,4 @@ describe Eztv do
       Eztv.matching_titles(page).should eq(["History Ch Crimes That Shook Britain"])
     end
   end
-
 end

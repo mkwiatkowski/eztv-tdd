@@ -21,19 +21,33 @@ module Eztv
   end
 
   def self.search_title
-    puts "Usage: eztv.rb [title]" if ARGV.length > 1
-    (ARGV.length > 0) ? ARGV[0] : ""
+    if ARGV.length > 1
+      puts "Usage: eztv.rb [title]"
+      raise SystemExit
+    else
+      (ARGV.length > 0) ? ARGV[0] : ""
+    end
   end
 
   def self.last_week_results
     page = 0
     titles = Array.new
     loop do
-      titles += list_the_elements_of_page(get_page(page))
-      break if is_last_page?(get_page(page))
+      content = get_page(page)
+      titles += list_the_elements_of_page(content)
+      break if is_last_page?(content)
       page += 1
     end
     titles
+  end
+
+  def self.print_last_week_results(search=nil)
+    titles = []
+    (0..1).each do |page|
+      titles += list_the_elements_of_page(get_page(page))
+    end
+    titles.select!{|title| title.include?(search)} unless search.nil?
+    titles.map { |title| puts title }
   end
 
   def self.finish_process
@@ -41,6 +55,6 @@ module Eztv
   end
 
   def self.matching_titles(page)
-    list_the_elements_of_page(page).select {|title| title.downcase.include?(search_title.downcase)}
+    list_the_elements_of_page(page).select { |title| title.downcase.include?(search_title.downcase) }
   end
 end
