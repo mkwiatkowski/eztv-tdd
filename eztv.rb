@@ -10,10 +10,23 @@ module Eztv
   end
 
   def self.list_the_elements_of_page(page)
-    page.search('tr.forum_header_border').map do |tr|
-      tr.at('td:nth-child(4)').content.match(/>1 week/) && next
-      tr.at('td:nth-child(2)').content.strip
-    end.compact
+    releases, added = [], ''
+    page.search('tr').each do |tr|
+      added = tr.content.strip.match(/Added on: (.+)/)[1] if tr['class'].eql?('forum_space_border')
+
+      if tr['class'].eql?('forum_header_border')
+        next if tr.at('td:nth-child(4)').content.match(/>1 week/)
+        title = tr.at('td:nth-child(2)')
+
+        releases.push(
+          date: added,
+          title: title.content.strip,
+          url: 'http://eztv.it' + title.at('a')['href']
+        )
+      end
+    end
+
+    releases
   end
 
   def self.is_last_page?(page)
@@ -34,7 +47,7 @@ module Eztv
     titles = Array.new
     loop do
       content = get_page(page)
-      titles += list_the_elements_of_page(content)
+      titles += list_the_elements_of_page(content).map {|ep| ep[:title]}
       break if is_last_page?(content)
       page += 1
     end
@@ -42,10 +55,7 @@ module Eztv
   end
 
   def self.print_last_week_results(search=nil)
-    titles = []
-    (0..1).each do |page|
-      titles += list_the_elements_of_page(get_page(page))
-    end
+    titles = last_week_results
     titles.select!{|title| title.include?(search)} unless search.nil?
     titles.map { |title| puts title }
   end
@@ -55,6 +65,6 @@ module Eztv
   end
 
   def self.matching_titles(page)
-    list_the_elements_of_page(page).select { |title| title.downcase.include?(search_title.downcase) }
+    list_the_elements_of_page(page).map {|ep| ep[:title]}.select { |title| title.downcase.include?(search_title.downcase) }
   end
 end
