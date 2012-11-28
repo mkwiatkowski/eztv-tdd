@@ -73,8 +73,23 @@ describe Eztv do
       Eztv.list_the_elements_of_page(page).should_not be_empty
     end
 
-    it "should return ['History Ch Crimes That Shook Britain', 'Key and Peele', 'The Colbert Report']" do
-      Eztv.list_the_elements_of_page(part_of_page).should == ['History Ch Crimes That Shook Britain', 'Key and Peele', 'The Colbert Report']
+    it 'should be an array of hashes each with date, title and url keys' do
+      episodes = Eztv.list_the_elements_of_page(page)
+      episodes[0].should == {
+        date: '15, November, 2012',
+        title: 'History Ch Crimes That Shook Britain 4of6 Stephanie Slater XviD AC3-MVGroup',
+        url: 'http://eztv.it/ep/39673/history-ch-crimes-that-shook-britain-4of6-stephanie-slater-xvid-ac3-mvgroup/'
+      }
+      episodes[1].should == {
+        date: '15, November, 2012',
+        title: 'Key and Peele S02E08 HDTV x264-EVOLVE',
+        url: 'http://eztv.it/ep/39672/key-and-peele-s02e08-hdtv-x264-evolve/',
+      }
+      episodes[2].should == {
+        date: '15, November, 2012',
+        title: 'The Colbert Report 2012 11 14 (HDTV-x264-LMAO) [VTV]',
+        url: 'http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/'
+      }
     end
 
     it 'should raise NoMethodError' do
@@ -128,12 +143,22 @@ describe Eztv do
         Eztv.should_receive(:get_page).with(0).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
       end
 
-      it "should return collection of titles from last week" do
-        Eztv.last_week_results.should eq(['History Ch Crimes That Shook Britain', 'Key and Peele'])
+      it "should return collection of titles, urls and released dates from last week" do
+        episodes = Eztv.last_week_results
+        episodes[0].should == {
+          date: '15, November, 2012',
+          title: 'History Ch Crimes That Shook Britain',
+          url: 'http://eztv.it/ep/39673/history-ch-crimes-that-shook-britain-4of6-stephanie-slater-xvid-ac3-mvgroup/'
+        }
+        episodes[1].should == {
+          date: '15, November, 2012',
+          title: 'Key and Peele',
+          url: 'http://eztv.it/ep/39672/key-and-peele-s02e08-hdtv-x264-evolve/',
+        }
       end
 
       it "should not contain title older than one week" do
-        Eztv.last_week_results.should_not include('The Colbert Report')
+        Eztv.last_week_results.map {|ep| ep[:title]}.should_not include('The Colbert Report')
       end
     end
   end
@@ -142,6 +167,7 @@ describe Eztv do
     before do
       Eztv.should_receive(:get_page).with(0).at_least(:once).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
       Eztv.should_receive(:get_page).with(1).at_least(:once).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+      $stdout.stub(:puts)
     end
 
     it "should receive up to one argument" do
@@ -150,15 +176,15 @@ describe Eztv do
       expect { Eztv.print_last_week_results('a', 'b') }.to raise_error
     end
 
-    it "should print on screen titles separated by new line" do
-      $stdout.should_receive(:puts).with("History Ch Crimes That Shook Britain").twice
-      $stdout.should_receive(:puts).with("Key and Peele").twice
-      $stdout.should_receive(:puts).with("The Colbert Report")
+    it "should print on screen title, date and url of episodes in right format" do
+      $stdout.should_receive(:puts).with("History Ch Crimes That Shook Britain -> http://eztv.it/ep/39673/history-ch-crimes-that-shook-britain-4of6-stephanie-slater-xvid-ac3-mvgroup/ (15, November, 2012)").twice
+      $stdout.should_receive(:puts).with("Key and Peele -> http://eztv.it/ep/39672/key-and-peele-s02e08-hdtv-x264-evolve/ (15, November, 2012)").twice
+      $stdout.should_receive(:puts).with("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
       Eztv.print_last_week_results
     end
 
-    it "should print on screen only those titles which match to argument" do
-      $stdout.should_receive(:puts).with('The Colbert Report')
+    it "should print on screen only those episodes which match argument" do
+      $stdout.should_receive(:puts).with("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
       Eztv.print_last_week_results('Colbert')
     end
   end
@@ -186,21 +212,6 @@ describe Eztv do
     it "should return only matching titles" do
       stub_const("ARGV", ["crimes"])
       Eztv.matching_titles(page).should eq(["History Ch Crimes That Shook Britain"])
-    end
-  end
-
-  describe '.list_the_elements_of_page' do
-    let(:page) {Nokogiri::HTML(File.read('spec/fixtures/index.html'))}
-
-    it 'should contain date url and title' do
-      episodes = Eztv.list_the_elements_of_page(page)
-      episodes[0][:date].should eql('15, November, 2012')
-      episodes[0][:title].should eql('History Ch Crimes That Shook Britain 4of6 Stephanie Slater XviD AC3-MVGroup')
-      episodes[0][:url].should eql('http://eztv.it/ep/39673/history-ch-crimes-that-shook-britain-4of6-stephanie-slater-xvid-ac3-mvgroup/')
-    end
-
-    it 'each element should be and instance of Hash' do
-      Eztv.list_the_elements_of_page(page)[0].should be_an(Hash)
     end
   end
 end
