@@ -99,24 +99,34 @@ describe Eztv do
     end
   end
 
-  describe '.search_title' do
-    it "should return first argument provided by user" do
-      stub_const("ARGV", ["some_title"])
-      Eztv.search_title.should eq("some_title")
-      expect = Eztv.search_title
-      expect.should eq(ARGV.first)
+  describe 'run' do
+    context "with less than two arguments" do
+      before do
+        Eztv.should_receive(:get_page).with(0).at_least(:once).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
+        Eztv.should_receive(:get_page).with(1).at_least(:once).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
+        $stdout.stub(:puts)
+      end
+
+      it "should return titles with first argument provided by user when there is one argument" do
+        stub_const("ARGV", ["colbert"])
+        $stdout.should_receive(:puts).with("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
+        Eztv.run
+      end
+
+      it "should return last week results with when there is no arguments" do
+        stub_const("ARGV", [])
+        $stdout.should_receive(:puts).with("Key and Peele -> http://eztv.it/ep/39672/key-and-peele-s02e08-hdtv-x264-evolve/ (15, November, 2012)").twice
+        Eztv.run
+      end
     end
 
-    it "should return empty string if user provided no arguments" do
-      stub_const("ARGV", [])
-      Eztv.search_title.should eq("")
-    end
-
-    it "should return message and leave when there is more than one argument" do
-      stub_const("ARGV", ["title", "extra_argument"])
-      $stdout.should_receive(:puts).with("Usage: eztv.rb [title]")
-      Eztv.should_receive(:raise).with(SystemExit)
-      Eztv.search_title
+    context "with two or more arguments" do
+      it "should return message and leave" do
+        stub_const("ARGV", ["title", "extra_argument"])
+        $stdout.should_receive(:puts).with("Usage: eztv.rb [title]")
+        Eztv.should_receive(:raise).with(SystemExit)
+        Eztv.run
+      end
     end
   end
 

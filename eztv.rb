@@ -44,20 +44,20 @@ module Eztv
 
   def self.last_week_results
     page = 0
-    titles = Array.new
+    episodes = []
     loop do
       content = get_page(page)
-      titles += list_the_elements_of_page(content).map {|ep| ep[:title]}
+      episodes += list_the_elements_of_page(content)
       break if is_last_page?(content)
       page += 1
     end
-    titles
+    episodes
   end
 
   def self.print_last_week_results(search=nil)
-    titles = last_week_results
-    titles.select!{|title| title.include?(search)} unless search.nil?
-    titles.map { |title| puts title }
+    episodes = last_week_results
+    episodes.select!{|ep| ep[:title].include?(search)} unless search.nil?
+    episodes.map { |ep| puts ep[:title] + ' -> ' + ep[:url] + ' (' + ep[:date] + ')'}
   end
 
   def self.finish_process
