@@ -3,8 +3,6 @@ require 'nokogiri'
 
 module Eztv
 
-  @parse_flag = 0
-
   def self.get_page(number=0)
     Nokogiri::HTML(open("http://eztv.it/page_#{number}"))
   end
@@ -33,12 +31,16 @@ module Eztv
     !page.at('tr.forum_header_border:last-child td:nth-child(4)').content.match(/>1 week/).nil?
   end
 
-  def self.search_title
+  def self.run
     if ARGV.length > 1
       puts "Usage: eztv.rb [title]"
       raise SystemExit
     else
-      (ARGV.length > 0) ? ARGV[0] : ""
+      episodes = last_week_results
+      if ARGV.length == 1
+        episodes.select! {|e| e[:title].downcase.include?(ARGV[0].downcase)}
+      end
+      episodes.map {|e| puts e[:title] + ' -> ' + e[:url] + ' (' + e[:date] + ')'}
     end
   end
 
@@ -58,13 +60,5 @@ module Eztv
     episodes = last_week_results
     episodes.select!{|ep| ep[:title].include?(search)} unless search.nil?
     episodes.map { |ep| puts ep[:title] + ' -> ' + ep[:url] + ' (' + ep[:date] + ')'}
-  end
-
-  def self.finish_process
-    @parse_flag < 1
-  end
-
-  def self.matching_titles(page)
-    list_the_elements_of_page(page).map {|ep| ep[:title]}.select { |title| title.downcase.include?(search_title.downcase) }
   end
 end
