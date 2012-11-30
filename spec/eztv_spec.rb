@@ -1,4 +1,5 @@
 require_relative '../eztv'
+require 'open3'
 
 describe Eztv do
 
@@ -121,10 +122,9 @@ describe Eztv do
     end
 
     context "with two or more arguments" do
-      it "should return message and leave" do
-        stub_const("ARGV", ["title", "extra_argument"])
-        $stdout.should_receive(:puts).with("Usage: eztv.rb [title]")
-        Eztv.should_receive(:raise).with(SystemExit)
+      it "should return titles including all arguments provided by user" do
+        stub_const("ARGV", ["colbert", "report"])
+        $stdout.should_receive(:puts).with("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
         Eztv.run
       end
     end
@@ -196,6 +196,14 @@ describe Eztv do
     it "should print on screen only those episodes which match argument" do
       $stdout.should_receive(:puts).with("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
       Eztv.print_last_week_results('Colbert')
+    end
+  end
+
+  describe "application" do
+    it "should print on stdout list of last week episodes" do
+      stdin, stdout, stderr = Open3.popen3("ruby eztv.rb")
+      stdin.should be_empty
+      stdout.should include("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
     end
   end
 end
