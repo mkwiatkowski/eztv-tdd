@@ -101,7 +101,7 @@ describe Eztv do
   end
 
   describe 'run' do
-    context "with less than two arguments" do
+    context "for two sample pages" do
       before do
         Eztv.should_receive(:get_page).with(0).at_least(:once).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_part.html")))
         Eztv.should_receive(:get_page).with(1).at_least(:once).and_return(Nokogiri::HTML(File.read("spec/fixtures/index_last.html")))
@@ -116,12 +116,10 @@ describe Eztv do
 
       it "should return last week results with when there is no arguments" do
         stub_const("ARGV", [])
-        $stdout.should_receive(:puts).with("Key and Peele -> http://eztv.it/ep/39672/key-and-peele-s02e08-hdtv-x264-evolve/ (15, November, 2012)").twice
+        $stdout.should_receive(:puts).with("Key and Peele -> http://eztv.it/ep/39672/key-and-peele-s02e08-hdtv-x264-evolve/ (15, November, 2012)")
         Eztv.run
       end
-    end
 
-    context "with two or more arguments" do
       it "should return titles including all arguments provided by user" do
         stub_const("ARGV", ["colbert", "report"])
         $stdout.should_receive(:puts).with("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
@@ -187,8 +185,8 @@ describe Eztv do
     end
 
     it "should print on screen title, date and url of episodes in right format" do
-      $stdout.should_receive(:puts).with("History Ch Crimes That Shook Britain -> http://eztv.it/ep/39673/history-ch-crimes-that-shook-britain-4of6-stephanie-slater-xvid-ac3-mvgroup/ (15, November, 2012)").twice
-      $stdout.should_receive(:puts).with("Key and Peele -> http://eztv.it/ep/39672/key-and-peele-s02e08-hdtv-x264-evolve/ (15, November, 2012)").twice
+      $stdout.should_receive(:puts).with("History Ch Crimes That Shook Britain -> http://eztv.it/ep/39673/history-ch-crimes-that-shook-britain-4of6-stephanie-slater-xvid-ac3-mvgroup/ (15, November, 2012)")
+      $stdout.should_receive(:puts).with("Key and Peele -> http://eztv.it/ep/39672/key-and-peele-s02e08-hdtv-x264-evolve/ (15, November, 2012)")
       $stdout.should_receive(:puts).with("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
       Eztv.print_last_week_results
     end
@@ -201,9 +199,23 @@ describe Eztv do
 
   describe "application" do
     it "should print on stdout list of last week episodes" do
-      stdin, stdout, stderr = Open3.popen3("ruby eztv.rb")
-      stdin.should be_empty
-      stdout.should include("The Colbert Report -> http://eztv.it/ep/39671/the-colbert-report-2012-11-14-hdtv-x264-lmao/ (15, November, 2012)")
+      stdout, stderr = run_app
+      stdout.should_not be_empty
+      stderr.should be_empty
+      stdout.each_line do |line|
+        line.should =~ /^.* -> http:\/\/eztv.it\/ep\/.* (.*)$/
+      end
+    end
+
+    it "should not contain duplicates" do
+      stdout, stderr = run_app("colbert")
+      lines = stdout.split("\n")
+      lines.should == lines.uniq
+    end
+
+    private
+    def run_app(arg="")
+      Open3.popen3("ruby eztv.rb #{arg}")[1..2].map(&:read)
     end
   end
 end

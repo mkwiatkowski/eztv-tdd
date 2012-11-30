@@ -2,7 +2,6 @@ require 'open-uri'
 require 'nokogiri'
 
 module Eztv
-
   def self.get_page(number=0)
     Nokogiri::HTML(open("http://eztv.it/page_#{number}"))
   end
@@ -32,16 +31,7 @@ module Eztv
   end
 
   def self.run
-    if ARGV.length > 1
-      puts "Usage: eztv.rb [title]"
-      raise SystemExit
-    else
-      episodes = last_week_results
-      if ARGV.length == 1
-        episodes.select! {|e| e[:title].downcase.include?(ARGV[0].downcase)}
-      end
-      episodes.map {|e| puts e[:title] + ' -> ' + e[:url] + ' (' + e[:date] + ')'}
-    end
+    print_last_week_results(ARGV[0])
   end
 
   def self.last_week_results
@@ -53,12 +43,33 @@ module Eztv
       break if is_last_page?(content)
       page += 1
     end
-    episodes
+    episodes.uniq
   end
 
-  def self.print_last_week_results(search=nil)
-    episodes = last_week_results
-    episodes.select!{|ep| ep[:title].include?(search)} unless search.nil?
-    episodes.map { |ep| puts ep[:title] + ' -> ' + ep[:url] + ' (' + ep[:date] + ')'}
+  def self.print_help_and_exit
+    puts "Usage: eztv.rb [title]"
+    exit
   end
+
+  def self.print_last_week_results(search_term=nil)
+    print_results(select_matching(last_week_results, search_term))
+  end
+
+  def self.print_results(episodes)
+    episodes.each do |ep|
+      puts(ep[:title] + ' -> ' + ep[:url] + ' (' + ep[:date] + ')')
+    end
+  end
+
+  def self.select_matching(episodes, search_term)
+    if search_term
+      episodes.select {|ep| ep[:title].downcase.include?(search_term.downcase)}
+    else
+      episodes
+    end
+  end
+end
+
+if __FILE__ == $0
+  Eztv.run
 end

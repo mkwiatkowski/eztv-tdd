@@ -34,3 +34,4 @@
 14. [Thirteenth code review](http://www.youtube.com/watch?v=aQ__3fH6CME)
 15. [Fourteenth code review](http://www.youtube.com/watch?v=euScioWmKSM)
 16. [Fifteenth code review](http://www.youtube.com/watch?v=yIZguG4efWk)
+17. [Sixteenth code review and summary](http://www.youtube.com/watch?v=_-mbVUgyVYE)
